@@ -40,12 +40,13 @@
 
 	--TODO
 	--Generate Arena (25/5/15)
-		-- 800 x 640
-			-- 50 Tiles horizontal
-			-- 40 Tiles Vertical			
-		-- Encircling Wall
-		-- Block placement		
-			-- Will need to keep track of each blocks location
+		-- 800 x 640 [DONE]
+			-- 50 Tiles horizontal [DONE]
+			-- 40 Tiles Vertical [DONE]	
+		-- Encircling Wall [DONE]
+		-- Block placement	[DONE]
+			-- Will need to keep track of each blocks location [DONE]
+		-- Draw floor tiles [DONE]
 
 	-- Player
 		-- Attributes
