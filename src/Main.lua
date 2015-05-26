@@ -93,9 +93,6 @@
 			-- 200 points, extra health bar
 			-- 300 points, extra magic
 
-
-
-
 function love.conf(t)
 
 	t.window.width = 800
@@ -104,14 +101,10 @@ function love.conf(t)
 
 end
 
-
 function love.load()
 
 	--Code to load spritesheet from website through api
-	--
-	--
-	--
-	--
+
 
 	--Individual sprites - 16x16 
 	spritesheet = love.graphics.newImage("spritesheet.png")
@@ -126,41 +119,30 @@ function love.load()
 	enemy2sprite = love.graphics.newQuad(32,32,16,16, spritesheet:getDimensions())
 
 
-	-- Arena Wall Blocks - 7th row on spritesheet
-	y = 6*16
-	wallsprites = {}
-	for x=0,112,16 do
-		table.insert(wallsprites, love.graphics.newQuad(x,y, 16,16, spritesheet:getDimensions()))
-	end
 
-	floorsprite = love.graphics.newQuad(112,64, 16,16, spritesheet:getDimensions())
-
-
-	-- Arena Obstacles - Rows 5/6, skip last entry - used for floor tile
-	obstaclesprites	= {}
-	y1 = 5 * 16
-	y2 = 4 * 16
-
-	for x= 0, 96, 16 do
-		table.insert(obstaclesprites, love.graphics.newQuad(x,y1,16,16,spritesheet:getDimensions()))
-		table.insert(obstaclesprites, love.graphics.newQuad(x,y2,16,16,spritesheet:getDimensions()))
-	end
+	--Player
+	Player = {
+				xpos = 50,
+				ypos = 50,
+				health = 3,
+				speed = 5,
+				firespeed = 1,
+				maxshots = 1,
+			 	score = 0,
+			 	magic = 3,
+			 	upsprites = {},
+			 	downsprites = {},
+			 	leftsprites = {},
+			 	rightsprites = {}
+			 }
 
 
-	--Create obstacles
-	obstacles = {}
-	for i = 1, 25, 1 do
-
-		--Create x/y coordinates
-		xpos = math.random(16, 768)
-		ypos = math.random(16, 608)
-
-		--Randomise tile
-		tileind = math.random(1, #obstaclesprites)
-
-		table.insert(obstacles, {x = xpos, y = ypos, sprite = obstaclesprites[tileind]})
-
-	end  
+	--Arena
+	Arena = {wallsprites = extractWallSprites(),
+			 floorsprite = love.graphics.newQuad(112,64, 16,16, spritesheet:getDimensions()),
+			 obstacles = createObstacles()
+			}
+	
 
 end
 
@@ -189,8 +171,6 @@ function love.draw()
 
 	drawArenaObstacles()
 
-
-
 end
 
 
@@ -208,14 +188,14 @@ function drawArenaWalls()
 
 	-- Top/Bottom Rows
 	for row = 0, 49, 1 do
-		love.graphics.draw(spritesheet, wallsprites[1], row*16, toprowy)
-		love.graphics.draw(spritesheet, wallsprites[1], row*16, btmrowy)
+		love.graphics.draw(spritesheet, Arena.wallsprites[1], row*16, toprowy)
+		love.graphics.draw(spritesheet, Arena.wallsprites[1], row*16, btmrowy)
 	end
 
 	-- L/R Columns
 	for col = 0, 39, 1 do
-		love.graphics.draw(spritesheet, wallsprites[1], lftcolx, col*16)
-		love.graphics.draw(spritesheet, wallsprites[1], rhtcolx, col*16)
+		love.graphics.draw(spritesheet, Arena.wallsprites[1], lftcolx, col*16)
+		love.graphics.draw(spritesheet, Arena.wallsprites[1], rhtcolx, col*16)
 	end
 
 end
@@ -229,7 +209,7 @@ function drawArenaFloor()
 
 		for y = 1, 38, 1 do 
 
-			love.graphics.draw(spritesheet, floorsprite, x*16, y*16)
+			love.graphics.draw(spritesheet, Arena.floorsprite, x*16, y*16)
 
 		end
 	end
@@ -240,8 +220,92 @@ end
 function drawArenaObstacles()
 
 
-	for i = 1, #obstacles, 1 do
-		love.graphics.draw(spritesheet, obstacles[i].sprite, obstacles[i].x, obstacles[i].y)
+	for i = 1, #Arena.obstacles, 1 do
+		love.graphics.draw(spritesheet, Arena.obstacles[i].sprite, Arena.obstacles[i].x, Arena.obstacles[i].y)
 	end 
 
 end
+
+
+function extractWallSprites()
+
+	y = 6*16
+	wallsprites = {}
+
+	for x=0,112,16 do
+		table.insert(wallsprites, love.graphics.newQuad(x,y, 16,16, spritesheet:getDimensions()))
+	end
+
+	return wallsprites
+
+end
+
+function createObstacles()
+
+	-- Arena Obstacles - Rows 5/6, skip last entry - used for floor tile
+	obstaclesprites	= {}
+	y1 = 5 * 16
+	y2 = 4 * 16
+
+	for x= 0, 96, 16 do
+		table.insert(obstaclesprites, love.graphics.newQuad(x,y1,16,16,spritesheet:getDimensions()))
+		table.insert(obstaclesprites, love.graphics.newQuad(x,y2,16,16,spritesheet:getDimensions()))
+	end
+
+
+	--Create obstacles
+	obstacles = {}
+	for i = 1, 25, 1 do
+
+		--Create x/y coordinates
+		xpos = math.random(16, 768)
+		ypos = math.random(16, 608)
+
+		--Randomise tile
+		tileind = math.random(1, #obstaclesprites)
+
+		table.insert(obstacles, {x = xpos, y = ypos, sprite = obstaclesprites[tileind]})
+
+	end 
+
+	return obstacles;
+
+end
+
+function extractSprites(startsprite, endsprite, spritesizex, spritesizey)
+
+	x = 0
+	y = 0
+
+	spritetable = {}
+
+	sprites_per_row = spritesheet:getWidth() / spritesizex
+
+	x = 0
+	y = 0
+
+	for i = startsprite, endsprite, 1 do
+
+		spriteno = i
+
+		while spriteno  > sprites_per_row
+
+			spriteno - sprites_per_row
+			y = y + 1
+
+		end
+
+		x = spriteno
+
+		table.insert(spritetable, love.graphics.newQuad(x*spritesizex, y*spritesizey,spritesizex,spritesizey,spritesheet:getDimensions()))
+
+	end
+
+	return spritetable
+
+
+end
+
+
+
+
