@@ -48,22 +48,23 @@
 			-- Will need to keep track of each blocks location [DONE]
 		-- Draw floor tiles [DONE]
 
-	-- Player
+	-- Player (26/5/15 - 28/5/15)
 		-- Attributes
-			-- Position
-			-- Health (bars)
-			-- Speed
-			-- Firing speed
-			-- Max shots on screen
-			-- Score
-			-- Magic (bars)
+			-- Position [Done]
+			-- Health (bars) [Done]
+			-- Speed [Done]
+			-- Firing speed [Done]
+			-- Max shots on screen [Done]
+			-- Score [Done]
+			-- Magic (bars) [Done]
 		-- Movement
-			-- Animations
+			-- Animations 
 		-- Firing
 			-- Hit detection on walls / blocks
 		-- Swapping
 			-- Switch position with selected block
 			-- Mouse control
+
 
 	-- Health / Score / Magic Display
 		-- Use provided sprites + text
@@ -118,25 +119,29 @@ function love.load()
 	--Enemy Type - 2
 	enemy2sprite = love.graphics.newQuad(32,32,16,16, spritesheet:getDimensions())
 
-
 	testsprites = extractSprites(8,10,16,16)
-
 
 	--Player
 	Player = {
 				xpos = 50,
 				ypos = 50,
+				ox = 58,
+				oy = 58,
 				health = 3,
 				speed = 5,
 				firespeed = 1,
 				maxshots = 1,
 			 	score = 0,
 			 	magic = 3,
-			 	upsprites = {},
-			 	downsprites = {},
-			 	leftsprites = {},
-			 	rightsprites = {}
+			 	upsprites = extractSprites(7,9,16,16),
+			 	downsprites = extractSprites(1,3,16,16),
+			 	leftsprites = extractSprites(4,6,16,16),
+			 	rightsprites = extractSprites(4,6,16,16),
+			 	currentsprite = extractSprites(1,1,16,16)[1],
+			 	hzflip = 1;
 			 }
+
+
 
 
 	--Arena
@@ -151,10 +156,39 @@ end
 
 function love.update(dt)
 
+
+
+
+
 end
 
 
 function love.keypressed(key, isrepeat)
+
+	if key == "w" then
+		Player.flip = 1
+		Player.currentsprite = Player.upsprites[1]
+	end
+
+	if key == "s" then
+		Player.flip = 1
+		Player.currentsprite = Player.downsprites[1]
+	end
+
+	if key == "a" then
+		Player.flip = -1
+		Player.currentsprite = Player.leftsprites[1]
+
+	end
+
+	if key == "d" then
+		Player.flip = 1
+		Player.currentsprite = Player.rightsprites[1]
+	end
+
+
+
+
 
 
 end
@@ -173,11 +207,7 @@ function love.draw()
 
 	drawArenaObstacles()
 
-	love.graphics.draw(spritesheet, testsprites[1], 60,60)
-	love.graphics.draw(spritesheet, testsprites[2], 80,80)
-	love.graphics.draw(spritesheet, testsprites[3], 100,100)
-
-
+	love.graphics.draw(spritesheet, Player.currentsprite, Player.xpos, Player.ypos, 0, Player.flip, 1, 8, 8)
 
 end
 
