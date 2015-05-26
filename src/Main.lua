@@ -104,6 +104,8 @@ end
 
 function love.load()
 
+love.keyboard.setKeyRepeat(false)
+
 	--Code to load spritesheet from website through api
 
 
@@ -125,10 +127,10 @@ function love.load()
 	Player = {
 				xpos = 50,
 				ypos = 50,
-				ox = 58,
-				oy = 58,
 				health = 3,
-				speed = 5,
+				xspeed = 0,
+				yspeed = 0,
+				movespeed = 15,
 				firespeed = 1,
 				maxshots = 1,
 			 	score = 0,
@@ -137,8 +139,10 @@ function love.load()
 			 	downsprites = extractSprites(1,3,16,16),
 			 	leftsprites = extractSprites(4,6,16,16),
 			 	rightsprites = extractSprites(4,6,16,16),
-			 	currentsprite = extractSprites(1,1,16,16)[1],
-			 	hzflip = 1;
+			 	currentsprites = extractSprites(1,1,16,16),
+			 	spriteindex = 1,
+			 	flip = 1,
+			 	moving = false
 			 }
 
 
@@ -151,12 +155,28 @@ function love.load()
 			}
 	
 
+
+	--Timer
+	min_dt = 1/10
+	next_time = love.timer.getTime()
+
+
 end
 
 
 function love.update(dt)
 
 
+	next_time = next_time + min_dt
+
+	Player.xpos = Player.xpos + (dt * Player.xspeed)
+	Player.ypos = Player.ypos + (dt * Player.yspeed)
+
+	if (Player.moving and Player.spriteindex == #Player.currentsprites) then 
+		Player.spriteindex = 1
+	elseif (Player.moving) then
+		Player.spriteindex = Player.spriteindex + 1
+	end
 
 
 
@@ -167,23 +187,37 @@ function love.keypressed(key, isrepeat)
 
 	if key == "w" then
 		Player.flip = 1
-		Player.currentsprite = Player.upsprites[1]
+		Player.currentsprites = Player.upsprites
+		Player.yspeed = -Player.movespeed
+		Player.moving = true
+		Player.currentsprites = Player.upsprites
+
 	end
 
 	if key == "s" then
 		Player.flip = 1
-		Player.currentsprite = Player.downsprites[1]
+		Player.yspeed = Player.movespeed
+		Player.moving = true
+		Player.currentsprites = Player.downsprites
+
 	end
 
 	if key == "a" then
 		Player.flip = -1
-		Player.currentsprite = Player.leftsprites[1]
+		Player.xspeed = -Player.movespeed
+		Player.moving = true
+		Player.currentsprites = Player.leftsprites
+		
 
 	end
 
 	if key == "d" then
 		Player.flip = 1
-		Player.currentsprite = Player.rightsprites[1]
+		Player.currentsprites = Player.rightsprites
+		Player.xspeed = Player.movespeed
+		Player.moving = true
+		Player.currentsprites = Player.rightsprites
+
 	end
 
 
@@ -195,10 +229,35 @@ end
 
 function love.keyreleased(key)
 
+	if key == "w" then
+		Player.yspeed = 0
+		Player.moving = false
+
+	end
+
+	if key == "s" then
+		Player.yspeed = 0
+		Player.moving = false
+
+	end
+
+	if key == "a" then
+		Player.xspeed = 0
+		Player.moving = false
+
+	end
+
+	if key == "d" then
+		Player.xspeed = 0
+		Player.moving = false
+
+	end
+
 end
 
 
 function love.draw()
+
 
 	love.graphics.print(#obstacles, 50,50)
 
@@ -207,7 +266,16 @@ function love.draw()
 
 	drawArenaObstacles()
 
-	love.graphics.draw(spritesheet, Player.currentsprite, Player.xpos, Player.ypos, 0, Player.flip, 1, 8, 8)
+	love.graphics.draw(spritesheet, Player.currentsprites[Player.spriteindex], Player.xpos, Player.ypos, 0, Player.flip, 1, 8, 8)
+
+
+   local cur_time = love.timer.getTime() 
+   if next_time <= cur_time then
+      next_time = cur_time
+      return
+   end
+
+  love.timer.sleep(next_time - cur_time)
 
 end
 
