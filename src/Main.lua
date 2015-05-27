@@ -58,7 +58,8 @@
 			-- Score [Done]
 			-- Magic (bars) [Done]
 		-- Movement
-			-- Animations 
+			-- Animations [Done]
+			-- Collision detection on blocks / walls
 		-- Firing
 			-- Hit detection on walls / blocks
 		-- Swapping
@@ -132,7 +133,7 @@ love.keyboard.setKeyRepeat(false)
 				yspeed = 0,
 				movespeed = 15,
 				firespeed = 1,
-				maxshots = 1,
+				maxshots = 3,
 			 	score = 0,
 			 	magic = 3,
 			 	upsprites = extractSprites(7,9,16,16),
@@ -140,20 +141,28 @@ love.keyboard.setKeyRepeat(false)
 			 	leftsprites = extractSprites(4,6,16,16),
 			 	rightsprites = extractSprites(4,6,16,16),
 			 	currentsprites = extractSprites(1,1,16,16),
+			 	shotsprite = extractSprites(29,29,16,16),
 			 	spriteindex = 1,
 			 	flip = 1,
-			 	moving = false
+			 	moving = {up = false, down = false, left = false, up = false}
 			 }
-
-
-
 
 	--Arena
 	Arena = {wallsprites = extractSprites(49,56,16,16),
 			 floorsprite = extractSprites(40,40,16,16),
 			 obstacles = createObstacles()
-			}
-	
+			}	
+
+	--Interface
+	Interface = {
+					lifesprite = extractSprites(31,31,16,16),
+					magicsprite = extractSprites(32,32,16,16),
+					scoresprite = extractSprites(30,30,16,16)
+				}
+
+
+	--Projectiles
+	Projectiles = {}
 
 
 	--Timer
@@ -178,8 +187,6 @@ function love.update(dt)
 		Player.spriteindex = Player.spriteindex + 1
 	end
 
-
-
 end
 
 
@@ -187,42 +194,29 @@ function love.keypressed(key, isrepeat)
 
 	if key == "w" then
 		Player.flip = 1
-		Player.currentsprites = Player.upsprites
 		Player.yspeed = -Player.movespeed
-		Player.moving = true
-		Player.currentsprites = Player.upsprites
-
+		Player.moving.up = true
 	end
 
 	if key == "s" then
 		Player.flip = 1
 		Player.yspeed = Player.movespeed
-		Player.moving = true
-		Player.currentsprites = Player.downsprites
-
+		Player.moving.down = true
 	end
 
 	if key == "a" then
 		Player.flip = -1
 		Player.xspeed = -Player.movespeed
-		Player.moving = true
-		Player.currentsprites = Player.leftsprites
-		
-
+		Player.moving.left = true
 	end
 
 	if key == "d" then
 		Player.flip = 1
-		Player.currentsprites = Player.rightsprites
 		Player.xspeed = Player.movespeed
-		Player.moving = true
-		Player.currentsprites = Player.rightsprites
-
+		Player.moving.right = true
 	end
 
-
-
-
+	determinePlayerSprites()
 
 
 end
@@ -231,27 +225,44 @@ function love.keyreleased(key)
 
 	if key == "w" then
 		Player.yspeed = 0
-		Player.moving = false
-
+		Player.moving.up = false
 	end
 
 	if key == "s" then
 		Player.yspeed = 0
-		Player.moving = false
-
+		Player.moving.down = false
 	end
 
 	if key == "a" then
 		Player.xspeed = 0
-		Player.moving = false
-
+		Player.moving.left = false
 	end
 
 	if key == "d" then
 		Player.xspeed = 0
-		Player.moving = false
-
+		Player.moving.right = false
 	end
+
+	determinePlayerSprites()
+
+end
+
+function love.mousereleased(x,y, button)
+
+	--Fire
+	if button == 'l' then
+
+		if(#Projectiles < Player.maxshots) then
+
+			shot = {xpos = Player.xpos, ypos = Player.ypos, targetx = x, targety = y, sprite = Player.shotsprite[1]}
+			table.insert(Projectiles, shot)
+
+		end
+	end
+
+	--Swap
+
+
 
 end
 
@@ -268,6 +279,8 @@ function love.draw()
 
 	love.graphics.draw(spritesheet, Player.currentsprites[Player.spriteindex], Player.xpos, Player.ypos, 0, Player.flip, 1, 8, 8)
 
+	drawProjectiles();
+
 
    local cur_time = love.timer.getTime() 
    if next_time <= cur_time then
@@ -276,6 +289,22 @@ function love.draw()
    end
 
   love.timer.sleep(next_time - cur_time)
+
+end
+
+
+
+function determinePlayerSprites()
+
+	if(Player.moving.left) then
+		Player.currentsprites = Player.leftsprites
+	elseif(Player.moving.right) then
+		Player.currentsprites = Player.rightsprites
+	elseif(Player.moving.up) then
+		Player.currentsprites = Player.upsprites
+	elseif (Player.moving.down) then
+		Player.currentsprites = Player.downsprites
+	end
 
 end
 
@@ -397,6 +426,13 @@ function extractSprites(startsprite, endsprite, spritesizex, spritesizey)
 
 end
 
+function drawProjectiles()
+
+	for i = 1, #Projectiles, 1 do
+		love.graphics.draw(spritesheet, Projectiles[i].sprite, Projectiles[i].xpos, Projectiles[i].ypos)
+	end
+
+end 
 
 
 
