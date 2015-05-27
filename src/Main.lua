@@ -266,11 +266,11 @@ function love.mousereleased(x,y, button)
 			xd = true
 			yd = true
 
-			if(x - Player.cx < 0) then
+			if(xlen < 0) then
 				xd = false
 			end
 
-			if(y - Player.cy < 0) then
+			if(ylen < 0) then
 				yd = false
 			end
 
