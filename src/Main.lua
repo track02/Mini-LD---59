@@ -128,11 +128,13 @@ love.keyboard.setKeyRepeat(false)
 	Player = {
 				xpos = 50,
 				ypos = 50,
+				cx = 42,
+				cy = 42,
 				health = 3,
 				xspeed = 0,
 				yspeed = 0,
 				movespeed = 15,
-				firespeed = 1,
+				firespeed = 50,
 				maxshots = 3,
 			 	score = 0,
 			 	magic = 3,
@@ -180,12 +182,14 @@ function love.update(dt)
 
 	Player.xpos = Player.xpos + (dt * Player.xspeed)
 	Player.ypos = Player.ypos + (dt * Player.yspeed)
+	Player.cx = Player.cx + (dt * Player.xspeed)
+	Player.cy = Player.cy + (dt * Player.yspeed)
 
-	if (Player.moving and Player.spriteindex == #Player.currentsprites) then 
-		Player.spriteindex = 1
-	elseif (Player.moving) then
-		Player.spriteindex = Player.spriteindex + 1
-	end
+
+	animatePlayer()
+
+	updateProjectiles(dt)
+
 
 end
 
@@ -254,7 +258,16 @@ function love.mousereleased(x,y, button)
 
 		if(#Projectiles < Player.maxshots) then
 
-			shot = {xpos = Player.xpos, ypos = Player.ypos, targetx = x, targety = y, sprite = Player.shotsprite[1]}
+			--Treat as triangle
+			xlen = ((x - Player.cx)) -- X (Adjacent) 
+			ylen = ((y - Player.cy)) -- Y (Opposite)
+
+			r = math.sqrt((xlen * xlen) + (ylen * ylen)) -- R (Hypotenuse)
+
+			xratio = xlen / r -- Ratio of x to r (Sin[theta])
+			yratio = ylen / r -- Ratio of y to r (Cos[theta])
+
+			shot = {xpos = Player.cx, ypos = Player.cy, targetx = x, targety = y, sprite = Player.shotsprite[1], xinc = xratio, yinc = yratio}
 			table.insert(Projectiles, shot)
 
 		end
@@ -435,4 +448,27 @@ function drawProjectiles()
 end 
 
 
+function updateProjectiles(dt)
 
+	for i = 1, #Projectiles, 1 do 
+
+			Projectiles[i].ypos = Projectiles[i].ypos + (Player.firespeed * Projectiles[i].yinc)
+			Projectiles[i].xpos = Projectiles[i].xpos + (Player.firespeed * Projectiles[i].xinc)
+
+
+
+
+	end
+
+end
+
+
+function animatePlayer()
+
+	if (Player.moving and Player.spriteindex == #Player.currentsprites) then 
+		Player.spriteindex = 1
+	elseif (Player.moving) then
+		Player.spriteindex = Player.spriteindex + 1
+	end
+
+end
