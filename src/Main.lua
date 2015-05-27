@@ -165,7 +165,7 @@ love.keyboard.setKeyRepeat(false)
 
 
 	--Timer
-	min_dt = 1/10
+	min_dt = 1/60
 	next_time = love.timer.getTime()
 
 
@@ -185,7 +185,7 @@ function love.update(dt)
 	animatePlayer()
 
 	updateProjectiles(dt)
-
+	cleanupProjectiles(dt)
 
 end
 
@@ -245,6 +245,7 @@ function love.keyreleased(key)
 
 	determinePlayerSprites()
 
+
 end
 
 function love.mousereleased(x,y, button)
@@ -290,6 +291,29 @@ function love.mousereleased(x,y, button)
 	if button == 'r' then
 
 
+		-- Check if any blocks are selected
+		for i = 1, #Arena.obstacles, 1 do
+
+			--Four corners of block
+			blockx1 = Arena.obstacles[i].x
+			blockx2 = blockx1 + 16
+			blocky1 = Arena.obstacles[i].y
+			blocky2 = blocky1 + 16
+
+
+
+			if((x >= blockx1 and x <= blockx2) and (y >= blocky1 and y <= blocky2) ) then
+
+				Arena.obstacles[i].x = Player.xpos
+				Arena.obstacles[i].y = Player.ypos
+
+				Player.xpos = blockx1
+				Player.ypos = blocky1
+
+				return	
+			end
+
+		end
 	end
 
 
@@ -476,7 +500,6 @@ function updateProjectiles(dt)
 
 	end
 
-	cleanupProjectiles()
 
 end
 
@@ -493,8 +516,9 @@ end
 
 function cleanupProjectiles()
 
+	toremove = {}
 
-	for i = 1, #Projectiles, 1 do
+	for i = #Projectiles, 1, -1 do
 
 		passedx = false
 		passedy = false
@@ -515,9 +539,15 @@ function cleanupProjectiles()
 			passedy = true
 		end
 
-
 		if(passedx and passedy) then
-			table.remove(Projectiles, i)
+			table.insert(toremove, i)
+		end
+
+	end
+
+	if #toremove >= 1 then
+		for j = 1, #toremove, 1 do
+			table.remove(Projectiles, toremove[j])
 		end
 	end
 
