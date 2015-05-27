@@ -37,7 +37,6 @@
 	-- Slow / Fast variations
 
 
-
 	--TODO
 	--Generate Arena (25/5/15)
 		-- 800 x 640 [DONE]
@@ -66,10 +65,8 @@
 			-- Switch position with selected block
 			-- Mouse control
 
-
 	-- Health / Score / Magic Display
 		-- Use provided sprites + text
-
 
 	-- Enemies
 		-- Attributes
@@ -185,7 +182,6 @@ function love.update(dt)
 	Player.cx = Player.cx + (dt * Player.xspeed)
 	Player.cy = Player.cy + (dt * Player.yspeed)
 
-
 	animatePlayer()
 
 	updateProjectiles(dt)
@@ -264,16 +260,39 @@ function love.mousereleased(x,y, button)
 
 			r = math.sqrt((xlen * xlen) + (ylen * ylen)) -- R (Hypotenuse)
 
-			xratio = xlen / r -- Ratio of x to r (Sin[theta])
-			yratio = ylen / r -- Ratio of y to r (Cos[theta])
+			xratio = xlen / r -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
+			yratio = ylen / r -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
 
-			shot = {xpos = Player.cx, ypos = Player.cy, targetx = x, targety = y, sprite = Player.shotsprite[1], xinc = xratio, yinc = yratio}
+			xd = true
+			yd = true
+
+			if(x - Player.cx < 0) then
+				xd = false
+			end
+
+			if(y - Player.cy < 0) then
+				yd = false
+			end
+
+
+			shot = {xpos = Player.cx, ypos = Player.cy,
+					targetx = x, targety = y, 
+					sprite = Player.shotsprite[1], 
+					xinc = xratio, yinc = yratio, 
+					xdist = xd, ydist = yd}
+
 			table.insert(Projectiles, shot)
 
 		end
 	end
 
 	--Swap
+	if button == 'r' then
+
+
+	end
+
+
 
 
 
@@ -452,13 +471,12 @@ function updateProjectiles(dt)
 
 	for i = 1, #Projectiles, 1 do 
 
-			Projectiles[i].ypos = Projectiles[i].ypos + (Player.firespeed * Projectiles[i].yinc)
-			Projectiles[i].xpos = Projectiles[i].xpos + (Player.firespeed * Projectiles[i].xinc)
-
-
-
+			Projectiles[i].ypos = Projectiles[i].ypos + (dt * Player.firespeed * Projectiles[i].yinc)
+			Projectiles[i].xpos = Projectiles[i].xpos + (dt * Player.firespeed * Projectiles[i].xinc)
 
 	end
+
+	cleanupProjectiles()
 
 end
 
@@ -469,6 +487,38 @@ function animatePlayer()
 		Player.spriteindex = 1
 	elseif (Player.moving) then
 		Player.spriteindex = Player.spriteindex + 1
+	end
+
+end
+
+function cleanupProjectiles()
+
+
+	for i = 1, #Projectiles, 1 do
+
+		passedx = false
+		passedy = false
+
+		if(Projectiles[i].xdist and Projectiles[i].xpos >= Projectiles[i].targetx) then
+			passedx = true
+		end
+
+		if(not Projectiles[i].xdist and Projectiles[i].xpos <= Projectiles[i].targetx) then
+			passedx = true
+		end
+
+		if(Projectiles[i].ydist and Projectiles[i].ypos >= Projectiles[i].targety) then
+			passedy = true
+		end
+
+		if(not Projectiles[i].ydist and Projectiles[i].ypos <= Projectiles[i].targety) then
+			passedy = true
+		end
+
+
+		if(passedx and passedy) then
+			table.remove(Projectiles, i)
+		end
 	end
 
 end
