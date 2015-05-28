@@ -176,7 +176,7 @@ love.keyboard.setKeyRepeat(false)
 
 	--Enemies
 	EnemyTable = {
-		maxEnemies = 1000,
+		maxEnemies = 100,
 		Enemies = {}
 	}
 
@@ -204,6 +204,7 @@ function love.update(dt)
 	projectileHitDetection()
 	cleanupProjectiles(dt)
 	updateEnemies(dt)
+	enemyHitDetection(dt)
 
 end
 
@@ -462,8 +463,6 @@ function updateProjectiles(dt)
 			Projectiles[i].cy = Projectiles[i].cy + (dt * Player.firespeed * Projectiles[i].yinc)
 			Projectiles[i].cx = Projectiles[i].cx + (dt * Player.firespeed * Projectiles[i].xinc)
 	end
-
-
 end
 
 function projectileHitDetection()
@@ -548,29 +547,38 @@ function updateEnemies(dt)
 		xratio = xlen / r -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
 		yratio = ylen / r -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
 
+
 		EnemyTable.Enemies[i].xinc = xratio
 		EnemyTable.Enemies[i].yinc = yratio		
 		
-		EnemyTable.Enemies[i].x = EnemyTable.Enemies[i].x - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
-		EnemyTable.Enemies[i].y = EnemyTable.Enemies[i].y - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
 
-		if(EnemyTable.Enemies[i].xinc > EnemyTable.Enemies[i].yinc) then 
-			if(EnemyTable.Enemies[i].yinc < 0) then
-				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].upsprites
-				EnemyTable.Enemies[i].flip = 1
+		if(not EnemyTable.Enemies[i].wait) then
+
+			EnemyTable.Enemies[i].x = EnemyTable.Enemies[i].x - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
+			EnemyTable.Enemies[i].y = EnemyTable.Enemies[i].y - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
+			EnemyTable.Enemies[i].cx = EnemyTable.Enemies[i].cx - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
+			EnemyTable.Enemies[i].cy = EnemyTable.Enemies[i].cy - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
+
+			if(EnemyTable.Enemies[i].xinc > EnemyTable.Enemies[i].yinc) then 
+				if(EnemyTable.Enemies[i].yinc < 0) then
+					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].upsprites
+					EnemyTable.Enemies[i].flip = 1
+				else
+					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].downsprites
+					EnemyTable.Enemies[i].flip = 1
+				end
 			else
-				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].downsprites
-				EnemyTable.Enemies[i].flip = 1
-			end
-		else
-			if(EnemyTable.Enemies[i].xinc < 0) then
-				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].leftsprites
-				EnemyTable.Enemies[i].flip = -1
-			else
-				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].rightsprites
-				EnemyTable.Enemies[i].flip = 1
-			end
+				if(EnemyTable.Enemies[i].xinc < 0) then
+					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].leftsprites
+					EnemyTable.Enemies[i].flip = -1
+				else
+					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].rightsprites
+					EnemyTable.Enemies[i].flip = 1
+				end
+			end			
+
 		end
+
 	end
 
 	animateEnemies()
@@ -588,8 +596,6 @@ function animateEnemies()
 		else
 			EnemyTable.Enemies[i].spriteindex = EnemyTable.Enemies[i].spriteindex + 1
 		end
-
-
 	end
 end
 
@@ -602,9 +608,8 @@ function drawEnemies()
 		love.graphics.draw(spritesheet, EnemyTable.Enemies[i].currentsprites[index], EnemyTable.Enemies[i].x, EnemyTable.Enemies[i].y)
 		fps = love.timer.getFPS( )
 		love.graphics.print(fps, 300, 300)
+		love.graphics.circle( "fill", EnemyTable.Enemies[i].cx, EnemyTable.Enemies[i].cy, EnemyTable.Enemies[i].rad, 5)
 	end
-
-
 end
 
 
@@ -618,13 +623,14 @@ function spawnEnemy()
 
 		if(enemytype < 0.5) then
 			table.insert(EnemyTable.Enemies, {x = xpos, y = ypos, 
+				rad = 8, cx = xpos + 8, cy = ypos + 8,
 				upsprites = enemyType1.upsprites, downsprites = enemyType1.downsprites, 
 				leftsprites = enemyType1.leftsprites,  rightsprites = enemyType1.rightsprites, 
 				currentsprites = enemyType1.downsprites,
 				health = enemyType1.health,
 				movespeed = enemyType1.movespeed,
 				targetx = Player.x, targety = Player.y,
-				xinc = 0, yinc = 0, flip = 1, spriteindex = 1})
+				xinc = 0, yinc = 0, flip = 1, spriteindex = 1, wait = false})
 		else
 				table.insert(EnemyTable.Enemies, {x = xpos, y = ypos, 
 				rad = 8, cx = xpos + 8, cy = ypos + 8,	
@@ -634,16 +640,42 @@ function spawnEnemy()
 				health = enemyType2.health,
 				movespeed = enemyType2.movespeed,
 				targetx = Player.x, targety = Player.y,
-				xinc = 0, yinc = 0, flip = 1, spriteindex = 1})
+				xinc = 0, yinc = 0, flip = 1, spriteindex = 1, wait = false})
 		end
-
-
-
-
 	end
-
 end
 
+
+function enemyHitDetection(dt)
+
+	for i = 1, #EnemyTable.Enemies, 1 do
+
+		EnemyTable.Enemies[i].wait = false
+		x1 = EnemyTable.Enemies[i].cx - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].xinc)
+		y1 = EnemyTable.Enemies[i].cy - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].yinc)
+		rad1 = EnemyTable.Enemies[i].rad
+
+		for j = 1, #EnemyTable.Enemies, 1 do
+
+			if(not(j == i)) then
+
+				x2 = EnemyTable.Enemies[j].cx + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].xinc)
+				y2 = EnemyTable.Enemies[j].cy + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].yinc)
+				rad2 = EnemyTable.Enemies[j].rad
+
+
+				dx = x1 - x2
+				dy = y1 - y2
+				distance = math.sqrt((dx*dx) + (dy * dy))
+
+				if(distance < (rad1 + rad2)) then
+					EnemyTable.Enemies[i].wait = true
+				end
+
+			end
+		end
+	end
+end
 
 
 
