@@ -294,7 +294,7 @@ function love.draw()
 	love.graphics.draw(spritesheet, Player.currentsprites[Player.spriteindex], Player.xpos, Player.ypos, 0, Player.flip, 1, 8, 8)
 
 	drawProjectiles();
-	love.graphics.circle( "fill", Player.xpos, Player.ypos, Player.rad, 5)
+	--love.graphics.circle( "fill", Player.xpos, Player.ypos, Player.rad, 5)
 
 	drawEnemies()
 
@@ -372,7 +372,7 @@ function drawArenaObstacles()
 
 	for i = 1, #Arena.obstacles, 1 do
 		love.graphics.draw(spritesheet, Arena.obstacles[i].sprite, Arena.obstacles[i].x, Arena.obstacles[i].y)
-		love.graphics.circle( "fill", Arena.obstacles[i].cx, Arena.obstacles[i].cy, Arena.obstacles[i].rad, 5)
+		--love.graphics.circle( "fill", Arena.obstacles[i].cx, Arena.obstacles[i].cy, Arena.obstacles[i].rad, 5)
 	end 
 
 end
@@ -446,7 +446,7 @@ function drawProjectiles()
 
 	for i = 1, #Projectiles, 1 do
 		love.graphics.draw(spritesheet, Projectiles[i].sprite, Projectiles[i].xpos, Projectiles[i].ypos)
-		love.graphics.circle( "fill", Projectiles[i].cx, Projectiles[i].cy, Projectiles[i].rad, 5)
+		--love.graphics.circle( "fill", Projectiles[i].cx, Projectiles[i].cy, Projectiles[i].rad, 5)
 
 	end
 
@@ -539,46 +539,25 @@ function updateEnemies(dt)
 	for i = 1, #EnemyTable.Enemies, 1 do
 
 		--Treat as triangle
-		xlen = ((EnemyTable.Enemies[i].x - Player.xpos)) -- X (Adjacent) 
-		ylen = ((EnemyTable.Enemies[i].y - Player.ypos)) -- Y (Opposite)
-
-		r = math.sqrt((xlen * xlen) + (ylen * ylen)) -- R (Hypotenuse)
-
-		xratio = xlen / r -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
-		yratio = ylen / r -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
-
-
-		EnemyTable.Enemies[i].xinc = xratio
-		EnemyTable.Enemies[i].yinc = yratio		
-		
-
 		if(not EnemyTable.Enemies[i].wait) then
+			xlen = (EnemyTable.Enemies[i].x - Player.xpos) -- X (Adjacent) 
+			ylen = (EnemyTable.Enemies[i].y - Player.ypos) -- Y (Opposite)
+
+			r = math.sqrt((xlen * xlen) + (ylen * ylen)) -- R (Hypotenuse)
+
+			xratio = xlen / r -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
+			yratio = ylen / r -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
+
+
+			EnemyTable.Enemies[i].xinc = xratio
+			EnemyTable.Enemies[i].yinc = yratio		
+			
 
 			EnemyTable.Enemies[i].x = EnemyTable.Enemies[i].x - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
 			EnemyTable.Enemies[i].y = EnemyTable.Enemies[i].y - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
 			EnemyTable.Enemies[i].cx = EnemyTable.Enemies[i].cx - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
 			EnemyTable.Enemies[i].cy = EnemyTable.Enemies[i].cy - (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
-
-			if(EnemyTable.Enemies[i].xinc > EnemyTable.Enemies[i].yinc) then 
-				if(EnemyTable.Enemies[i].yinc < 0) then
-					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].upsprites
-					EnemyTable.Enemies[i].flip = 1
-				else
-					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].downsprites
-					EnemyTable.Enemies[i].flip = 1
-				end
-			else
-				if(EnemyTable.Enemies[i].xinc < 0) then
-					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].leftsprites
-					EnemyTable.Enemies[i].flip = -1
-				else
-					EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].rightsprites
-					EnemyTable.Enemies[i].flip = 1
-				end
-			end			
-
 		end
-
 	end
 
 	animateEnemies()
@@ -590,6 +569,25 @@ function animateEnemies()
 
 
 	for i = 1, #EnemyTable.Enemies, 1 do
+
+		if(EnemyTable.Enemies[i].xinc > EnemyTable.Enemies[i].yinc) then 
+			if(EnemyTable.Enemies[i].yinc < 0) then
+				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].upsprites
+				EnemyTable.Enemies[i].flip = 1
+			else
+				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].downsprites
+				EnemyTable.Enemies[i].flip = 1
+			end
+		else
+			if(EnemyTable.Enemies[i].xinc < 0) then
+				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].leftsprites
+				EnemyTable.Enemies[i].flip = -1
+			else
+				EnemyTable.Enemies[i].currentsprites = EnemyTable.Enemies[i].rightsprites
+				EnemyTable.Enemies[i].flip = 1
+			end
+		end			
+
 
 		if(EnemyTable.Enemies[i].spriteindex == #EnemyTable.Enemies[i].currentsprites) then
 			EnemyTable.Enemies[i].spriteindex = 1
@@ -608,10 +606,9 @@ function drawEnemies()
 		love.graphics.draw(spritesheet, EnemyTable.Enemies[i].currentsprites[index], EnemyTable.Enemies[i].x, EnemyTable.Enemies[i].y)
 		fps = love.timer.getFPS( )
 		love.graphics.print(fps, 300, 300)
-		love.graphics.circle( "fill", EnemyTable.Enemies[i].cx, EnemyTable.Enemies[i].cy, EnemyTable.Enemies[i].rad, 5)
+		--love.graphics.circle( "fill", EnemyTable.Enemies[i].cx, EnemyTable.Enemies[i].cy, EnemyTable.Enemies[i].rad, 5)
 	end
 end
-
 
 function spawnEnemy()
 
@@ -623,23 +620,23 @@ function spawnEnemy()
 
 		if(enemytype < 0.5) then
 			table.insert(EnemyTable.Enemies, {x = xpos, y = ypos, 
-				rad = 8, cx = xpos + 8, cy = ypos + 8,
+				rad = 10, cx = xpos + 8, cy = ypos + 8,
 				upsprites = enemyType1.upsprites, downsprites = enemyType1.downsprites, 
 				leftsprites = enemyType1.leftsprites,  rightsprites = enemyType1.rightsprites, 
 				currentsprites = enemyType1.downsprites,
 				health = enemyType1.health,
 				movespeed = enemyType1.movespeed,
-				targetx = Player.x, targety = Player.y,
+				targetx = 50, targety = 50,
 				xinc = 0, yinc = 0, flip = 1, spriteindex = 1, wait = false})
 		else
 				table.insert(EnemyTable.Enemies, {x = xpos, y = ypos, 
-				rad = 8, cx = xpos + 8, cy = ypos + 8,	
+				rad = 10, cx = xpos + 8, cy = ypos + 8,	
 				upsprites = enemyType2.upsprites, downsprites = enemyType2.downsprites, 
 				leftsprites = enemyType2.leftsprites,  rightsprites = enemyType2.rightsprites, 
 				currentsprites = enemyType2.downsprites,
 				health = enemyType2.health,
 				movespeed = enemyType2.movespeed,
-				targetx = Player.x, targety = Player.y,
+				targetx = 50, targety = 50,
 				xinc = 0, yinc = 0, flip = 1, spriteindex = 1, wait = false})
 		end
 	end
@@ -650,26 +647,42 @@ function enemyHitDetection(dt)
 
 	for i = 1, #EnemyTable.Enemies, 1 do
 
-		EnemyTable.Enemies[i].wait = false
-		x1 = EnemyTable.Enemies[i].cx - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].xinc)
-		y1 = EnemyTable.Enemies[i].cy - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].yinc)
+		x1 = EnemyTable.Enemies[i].cx - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].xinc) --Where enemy will be next frame
+		y1 = EnemyTable.Enemies[i].cy - (EnemyTable.Enemies[i].movespeed *dt * EnemyTable.Enemies[i].yinc) -- Where enemy will be next frame
+
+		x1dir = EnemyTable.Enemies[i].xinc -- X direction
+		y1dir = EnemyTable.Enemies[i].yinc -- Y direction 
+
 		rad1 = EnemyTable.Enemies[i].rad
 
 		for j = 1, #EnemyTable.Enemies, 1 do
 
 			if(not(j == i)) then
 
-				x2 = EnemyTable.Enemies[j].cx + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].xinc)
-				y2 = EnemyTable.Enemies[j].cy + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].yinc)
+				
+				x2 = EnemyTable.Enemies[j].cx + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].xinc) -- Where enemy will be next frame 
+				y2 = EnemyTable.Enemies[j].cy + (EnemyTable.Enemies[j].movespeed *dt * EnemyTable.Enemies[j].yinc) -- Where enemy will be next frame
 				rad2 = EnemyTable.Enemies[j].rad
-
 
 				dx = x1 - x2
 				dy = y1 - y2
-				distance = math.sqrt((dx*dx) + (dy * dy))
 
-				if(distance < (rad1 + rad2)) then
-					EnemyTable.Enemies[i].wait = true
+				distance = math.sqrt((dx*dx) + (dy * dy)) -- Distance between the two
+
+
+				if (distance <= (rad1 + rad2)) then -- Collision
+
+					--Push i away from collision area
+					EnemyTable.Enemies[i].x = EnemyTable.Enemies[i].x + (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
+					EnemyTable.Enemies[i].y = EnemyTable.Enemies[i].y + (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
+					EnemyTable.Enemies[i].cx = EnemyTable.Enemies[i].cx + (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].xinc * dt)
+					EnemyTable.Enemies[i].cy = EnemyTable.Enemies[i].cy + (EnemyTable.Enemies[i].movespeed * EnemyTable.Enemies[i].yinc * dt)
+
+					EnemyTable.Enemies[j].x = EnemyTable.Enemies[j].x - (EnemyTable.Enemies[j].movespeed * EnemyTable.Enemies[j].xinc * dt)
+					EnemyTable.Enemies[j].y = EnemyTable.Enemies[j].y - (EnemyTable.Enemies[j].movespeed * EnemyTable.Enemies[j].yinc * dt)
+					EnemyTable.Enemies[j].cx = EnemyTable.Enemies[j].cx - (EnemyTable.Enemies[j].movespeed * EnemyTable.Enemies[j].xinc * dt)
+					EnemyTable.Enemies[j].cy = EnemyTable.Enemies[j].cy - (EnemyTable.Enemies[j].movespeed * EnemyTable.Enemies[j].yinc * dt)
+
 				end
 
 			end
