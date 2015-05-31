@@ -484,7 +484,7 @@ function createObstacles(obs)
 			gen = math.random()
 			tileind = math.random(1, #obstaclesprites)
 
-			if(gen < 0.1) then
+			if(gen < 0.050) then
 				table.insert(obstacles, {x = xpos, y = ypos, sprite = obstaclesprites[tileind], rad = 8, cx = xpos + 8, cy = ypos + 8})
 			end
 
@@ -670,8 +670,8 @@ function playerHitDetection(dt)
 				start = false
 			end
 	
-			x = Arena.obstacles[b].x
-			y = Arena.obstacles[b].y
+			x = Arena.obstacles[b].cx
+			y = Arena.obstacles[b].cy
 
 			Arena.obstacles[b].x = Player.xpos
 			Arena.obstacles[b].y = Player.ypos
