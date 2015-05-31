@@ -5,7 +5,6 @@
 ![Sprite Swap 3](https://github.com/track02/Mini-LD---59/blob/master/screen3.png "Screen3")
 ![Sprite Swap 4](https://github.com/track02/Mini-LD---59/blob/master/screen4.png "Screen4")
 
-[https://github.com/track02/Mini-LD---59/blob/master/screen1.png]
 
 Entry for Mini Ludum Dare - 59
 
