@@ -104,6 +104,8 @@ function love.load()
 
 love.keyboard.setKeyRepeat(false)
 
+	love.filesystem.setIdentity("src")
+
 	--Fallback spritesheet if loading doesnt work
 	spritesheet = love.graphics.newImage("defaultsheet.png")
 
@@ -328,14 +330,9 @@ function love.keyreleased(key)
 		local http=require'socket.http'
 		local b,c,h = http.request("http://swapshop.pixelsyntax.com/api/randomImage")
 		love.filesystem.write("randomsheet.png",b)
+		spritesheet = love.graphics.newImage("randomsheet.png")
+		--love.filesystem.remove("randomsheet.png")
 
-		if(love.filesystem.exists("randomsheet.png")) then	
-			spritesheet = love.graphics.newImage("randomsheet.png")
-		else
-			spritesheet = love.graphics.newImage("defaultsheet.png")
-		end
-
-		love.filesystem.remove("randomsheet.png")
 
 	end
 
@@ -1177,6 +1174,7 @@ function drawInterface()
 		if(not start and not gameover) then
 
 			love.graphics.print("Controls\nMovement: WASD\nAiming: Mouse\nFire: Left Mouse Button\nSwap Player w/ Block: Right Mouse Button when cursor is over block\nScatter Swarm: Hold Spacebar (uses magic, cannot shoot)\n\n\nStart Game: Z\n\nSwap Spritesheet: R (try before starting game)\n\n\nHealth is displayed top left, when hit player swaps places with random block\nMagic charges displayed top right, refill from pickups\nTotal score displayed top center, increase by killing enemies and gather coins\n\nNo limit on block swaps, so use if you get stuck due to random block placement!", 100, 200, 0, 1.2 ,1.2)
+			love.graphics.print(love.filesystem.getIdentity(), 300, 300)
 
 		end
 
