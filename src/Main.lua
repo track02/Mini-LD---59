@@ -192,7 +192,7 @@ love.keyboard.setKeyRepeat(false)
 		maxEnemies = 100,
 		enemyCount = 0,
 		spawnable = 1,
-		scatter = 1,
+		scatter = -1,
 		Enemies = {}
 	}
 
@@ -681,6 +681,8 @@ function playerHitDetection(dt)
 			Player.xpos = x - Player.rad / 2
 			Player.ypos = y - Player.rad / 2
 
+			EnemyTable.scatter = -1
+
 		end
 
 
@@ -732,8 +734,8 @@ function updateEnemies(dt)
 		local ylen = (Player.ypos - EnemyTable.Enemies[i].y) -- Y (Opposite)
 		local r = math.sqrt((xlen * xlen) + (ylen * ylen)) -- R (Hypotenuse)
 
-		local xvelocity = xlen / r -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
-		local yvelocity = ylen / r -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
+		local xvelocity = (xlen / r) * EnemyTable.scatter -- Ratio of x to r (Sin[theta]), value to increase x coordinate by each dt
+		local yvelocity = (ylen / r) * EnemyTable.scatter -- Ratio of y to r (Cos[theta]), value to increase y coordinate by each dt
 		
 
 		boidCollision_Obs(EnemyTable.Enemies[i])
@@ -1082,6 +1084,7 @@ function createBullet(x,y)
 	if(#Projectiles < Player.maxshots and start and not Player.casting) then
 
 		fire:play()
+		EnemyTable.scatter = 1
 
 		--Treat as triangle
 		local xlen = ((x - Player.xpos)) -- X (Adjacent) 
@@ -1173,7 +1176,7 @@ function drawInterface()
 
 		if(not start and not gameover) then
 
-			love.graphics.print("Controls\nMovement: WASD\nAiming: Mouse\nFire: Left Mouse Button\nSwap Player w/ Block: Right Mouse Button when cursor is over block\nScatter Swarm: Hold Spacebar (uses magic, cannot shoot)\n\n\nStart Game: Z\n\nSwap Spritesheet: R (try before starting game)\n\n\nHealth is displayed top left, when hit player swaps places with random block\nMagic charges displayed top right, refill from pickups\nTotal score displayed top center, increase by killing enemies and gather coins\n\nNo limit on block swaps, so use if you get stuck due to random block placement!", 100, 200, 0, 1.2 ,1.2)
+			love.graphics.print("Controls\nMovement: WASD\nAiming: Mouse\nFire: Left Mouse Button\nSwap Player w/ Block: Right Mouse Button when cursor is over block\nScare Swarm: Hold Spacebar (uses magic, cannot shoot)\n\n\nStart Game: Z\n\nSwap Spritesheet: R (try before starting game)\n\n\nHealth is displayed top left, when hit player swaps places with random block\nMagic charges displayed top right, refill from pickups\nTotal score displayed top center, increase by killing enemies and gather coins\n\nNo limit on block swaps, so use if you get stuck due to random block placement!\n\nAfter spawning or being hit enemies will flee until you start attacking", 100, 200, 0, 1.2 ,1.2)
 			love.graphics.print(love.filesystem.getIdentity(), 300, 300)
 
 		end
