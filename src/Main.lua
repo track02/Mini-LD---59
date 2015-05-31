@@ -144,7 +144,7 @@ love.keyboard.setKeyRepeat(false)
 
 	--Player
 	Player = {
-				xpos = 450,
+				xpos = 430,
 				ypos = 610,
 				health = 3,
 				xspeed = 0,
@@ -477,20 +477,20 @@ function createObstacles(obs)
 	end
 
 
-	--Create obstacles
 	obstacles = {}
-	for i = 1, obs, 1 do
+	for xpos = 16, 768, 16 do 
+		for ypos = 16, 608, 16 do
 
-		--Create x/y coordinates
-		xpos = math.random(16, 768)
-		ypos = math.random(16, 608)
+			gen = math.random()
+			tileind = math.random(1, #obstaclesprites)
 
-		--Randomise tile
-		tileind = math.random(1, #obstaclesprites)
+			if(gen < 0.1) then
+				table.insert(obstacles, {x = xpos, y = ypos, sprite = obstaclesprites[tileind], rad = 8, cx = xpos + 8, cy = ypos + 8})
+			end
 
-		table.insert(obstacles, {x = xpos, y = ypos, sprite = obstaclesprites[tileind], rad = 8, cx = xpos + 8, cy = ypos + 8})
+		end
+	end
 
-	end 
 
 	return obstacles;
 
